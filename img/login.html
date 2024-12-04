@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Underword</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: white;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-container {
+            background-color: #2d2d2d;
+            padding: 2rem;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .form-control, .btn {
+            border-radius: 5px;
+        }
+
+        .form-control {
+            background-color: #1a1a1a;
+            border: 1px solid #404040;
+            color: white;
+        }
+
+        .form-control:focus {
+            background-color: #1a1a1a;
+            border-color: #0d6efd;
+            color: white;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="text-center mb-4">
+            <img src="/img/Logo.png" height="100px" >
+            <br>
+            
+        </div>
+        <h2 class="text-center mb-4" class="mb-3">Iniciar Sesión</h2>
+        <form id="loginForm" method="post" action="login.php">
+            <div class="mb-3">
+                <label for="email" class="form-label">Correo Electrónico</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="password" class="form-label">Contraseña</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            
+            <div class="mb-3 form-check">
+                <input type="checkbox" class="form-check-input" id="remember">
+                <label class="form-check-label" for="remember">Recordarme</label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100 mb-3">Iniciar Sesión</button>
+            
+            <div class="text-center">
+                <a href="#" class="text-light">¿Olvidaste tu contraseña?</a>
+                <p class="mt-3">¿No tienes cuenta? <a href="register.html" class="text-primary">Regístrate</a></p>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

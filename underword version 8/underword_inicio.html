@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underword</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --card-bg: #2d2d2d;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --card-bg: #f8f9fa;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .app-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .app-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .report-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .severity-high { border-left: 4px solid #dc3545; }
+        .severity-medium { border-left: 4px solid #ffc107; }
+        .severity-low { border-left: 4px solid #198754; }
+
+        #map {
+            height: 400px;
+            margin: 20px 0 80px 0;
+            border-radius: 10px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, var(--bg-color) 80%, transparent);
+            padding: 15px;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover {
+            background: linear-gradient(to top, rgba(255,255,255,0.2), transparent);
+            transform: translateY(-2px);
+        }
+
+        .nav-item i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        #locationMap {
+            height: 200px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .theme-switch {
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="text-center">
+            <img src="/api/placeholder/120/120" alt="Underword Logo" class="app-logo mb-4">
+            <h4 class="mb-4">Underword</h4>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-4">
+                <div class="stat-card text-center p-2">
+                    <h3>12</h3>
+                    <small>Activos</small>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="stat-card text-center p-2">
+                    <h3>5</h3>
+                    <small>Áreas</small>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="stat-card text-center p-2">
+                    <h3>8</h3>
+                    <small>Resueltos</small>
+                </div>
+            </div>
+        </div>
+
+        <h5 class="mb-3">Reportes Recientes</h5>
+
+        <div class="report-card severity-high p-3">
+            <h6>CARRETERA - FRENTE DEPORTIVO</h6>
+            <p>Inundación severa que bloquea el tráfico.</p>
+            <span class="badge bg-danger">Alta Severidad</span>
+            <small class="ms-2">Hace 2 horas</small>
+        </div>
+
+        <div class="report-card severity-medium p-3">
+            <h6>CARRETERA FRENTE CHEDRAHUI</h6>
+            <p>Acumulación de agua en zonas peatonales.</p>
+            <span class="badge bg-warning text-dark">Severidad Media</span>
+            <small class="ms-2">Hace 4 horas</small>
+        </div>
+
+        <div class="report-card severity-low p-3">
+            <h6>FRENTE SALIDA UTTEC</h6>
+            <p>Pequeños charcos en la vía.</p>
+            <span class="badge bg-success">Baja Severidad</span>
+            <small class="ms-2">Hace 5 horas</small>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <!-- Modal de Reporte -->
+    <div class="modal fade" id="reportModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">Nuevo Reporte</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Ubicación</label>
+                        <button class="btn btn-outline-light w-100" id="getLocation">
+                            <i class="bi bi-geo-alt"></i> Obtener Ubicación Actual
+                        </button>
+                        <div id="locationMap"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nivel de Severidad</label>
+                        <select class="form-select">
+                            <option selected disabled>Seleccionar...</option>
+                            <option value="high">Alta</option>
+                            <option value="medium">Media</option>
+                            <option value="low">Baja</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Foto</label>
+                        <input type="file" class="form-control" accept="image/*">
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Ajustes -->
+    <div class="modal fade" id="settingsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">Ajustes</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="theme-switch" id="themeSwitch">
+                        <i class="bi bi-moon-fill"></i>
+                        <span>Cambiar Tema</span>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de Navegación -->
+    <div class="bottom-nav">
+        <div class="row text-center">
+            <div class="col">
+                <a href="#" class="nav-item" onclick="showHome()">
+                    <i class="bi bi-house-fill"></i>
+                    <small>Inicio</small>
+                </a>
+            </div>
+            <div class="col">
+                <a href="#" class="nav-item" onclick="showMap()">
+                    <i class="bi bi-map-fill"></i>
+                    <small>Mapa</small>
+                </a>
+            </div>
+            <div class="col">
+                <a href="#" class="nav-item" data-bs-toggle="modal" data-bs-target="#reportModal">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    <small>Alertas</small>
+                </a>
+            </div>
+            <div class="col">
+                <a href="#" class="nav-item" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                    <i class="bi bi-gear-fill"></i>
+                    <small>Ajustes</small>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+        // Inicialización del mapa principal
+        const map = L.map('map').setView([19.4326, -99.1332], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        // Inicialización del mapa de ubicación
+        let locationMap = L.map('locationMap').setView([19.5437, -99.1962], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(locationMap);
+        let locationMarker;
+ // Marcador para la ubicación actual
+         let currentLocationMarker;
+
+        // Función para obtener ubicación
+        document.getElementById('getLocation').addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    const { latitude, longitude } = position.coords;
+                    if (locationMarker) {
+                        locationMap.removeLayer(locationMarker);
+                    }
+                    locationMarker = L.marker([latitude, longitude]).addTo(locationMap);
+                    locationMap.setView([latitude, longitude], 15);
+                });
+            }
+        });
+
+     
+
+        // Funciones de navegación
+        function showHome() {
+            document.querySelector('#map').style.display = 'none';
+            document.querySelector('.main-content').style.display = 'block';
+        }
+
+        function showMap() {
+            document.querySelector('#map').style.display = 'block';
+            document.querySelector('.main-content').style.display = 'none';
+            map.invalidateSize();
+        }
+
+           // Cambio de tema
+           const themeSwitch = document.getElementById('themeSwitch');
+        themeSwitch.addEventListener('click', () => {
+            document.body.setAttribute('data-theme', 
+                document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light'
+            );
+            const icon = themeSwitch.querySelector('i');
+            icon.classList.toggle('bi-moon-fill');
+            icon.classList.toggle('bi-sun-fill');
+        });
+    </script>
+</body>
+</html>

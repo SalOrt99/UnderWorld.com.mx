@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underword</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+    <style>
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .app-logo {
+            width: 120px;
+            height: 120px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .report-card {
+            background: #fff;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .severity-high {
+            border-left: 4px solid #dc3545;
+        }
+        .severity-medium {
+            border-left: 4px solid #ffc107;
+        }
+        .severity-low {
+            border-left: 4px solid #198754;
+        }
+        #map, #locationMap {
+            height: 300px;
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #fff;
+            padding: 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-item {
+            color: #666;
+            text-decoration: none;
+        }
+        .nav-item:hover {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="text-center">
+            <img src="/api/placeholder/120/120" alt="Underword Logo" class="app-logo mb-4">
+            <h4 id="underword" class="mb-4">Underword</h4>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-4">
+                <div class="stat-card text-center p-2">
+                    <h3>12</h3>
+                    <span class="small">Activos</span>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="stat-card text-center p-2">
+                    <h3>5</h3>
+                    <span class="small">Áreas</span>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="stat-card text-center p-2">
+                    <h3>8</h3>
+                    <span class="small">Resueltos</span>
+                </div>
+            </div>
+        </div>
+
+        <h5 id="reportes-recientes" class="mb-3">Reportes Recientes</h5>
+
+        <div class="report-card severity-high p-3">
+            <h6>CARRETERA - FRENTE DEPORTIVO</h6>
+            <p>Inundación severa que bloquea el tráfico.</p>
+            <span class="badge bg-danger">Alta Severidad</span>
+            <span class="small">Hace 2 horas</span>
+        </div>
+
+        <div class="report-card severity-medium p-3">
+            <h6>CARRETERA FRENTE CHEDRAHUI</h6>
+            <p>Acumulación de agua en zonas peatonales.</p>
+            <span class="badge bg-warning text-dark">Severidad Media</span>
+            <span class="small">Hace 4 horas</span>
+        </div>
+
+        <div class="report-card severity-low p-3">
+            <h6>FRENTE SALIDA UTTEC</h6>
+            <p>Pequeños charcos en la vía.</p>
+            <span class="badge bg-success">Baja Severidad</span>
+            <span class="small">Hace 5 horas</span>
+        </div>
+
+        <div id="map"></div>
+    </div>
+
+    <!-- Modal de Nuevo Reporte -->
+    <div id="reportModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-light">
+                <div class="modal-header border-0">
+                    <h5 id="nuevo-reporte" class="modal-title">Nuevo Reporte</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Ubicación</label>
+                        <button id="getLocation" class="btn btn-primary w-100 mb-2">Obtener Ubicación Actual</button>
+                        <div id="locationMap"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nivel de Severidad</label>
+                        <select class="form-select">
+                            <option selected disabled>Seleccionar...</option>
+                            <option value="high">Alta</option>
+                            <option value="medium">Media</option>
+                            <option value="low">Baja</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Foto</label>
+                        <input type="file" class="form-control" accept="image/*">
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Ajustes -->
+    <div id="settingsModal" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-light">
+                <div class="modal-header border-0">
+                    <h5 id="ajustes" class="modal-title">Ajustes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="themeSwitch" class="theme-switch">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                            <label class="form-check-label" for="darkModeToggle">Cambiar Tema</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="row text-center">
+            <div class="col">
+                <a href="#" class="nav-item" onclick="showHome()">
+                    <div class="small">Inicio</div>
+                </a>
+            </div>
+            <div class="col">
+                <a href="#" class="nav-item" onclick="showMap()">
+                    <div class="small">Mapa</div>
+                </a>
+            </div>
+            <div class="col">
+                <a href="#" class="nav-item" data-bs-toggle="modal" data-bs-target="#reportModal">
+                    <div class="small">Alertas</div>
+                </a>
+            </div>
+            <div class="col">
+                <a href="#" class="nav-item" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                    <div class="small">Ajustes</div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+        // Inicialización de mapas
+        let mainMap = L.map('map').setView([19.5437, -99.1962], 13);
+        let locationMap = L.map('locationMap').setView([19.5437, -99.1962], 13);
+        
+        // Añadir capa de mapa a ambos mapas
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(mainMap);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(locationMap);
+
+        // Marcador para la ubicación actual
+        let currentLocationMarker;
+
+        // Función para obtener la ubicación actual
+        document.getElementById('getLocation').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    // Si ya existe un marcador, lo eliminamos
+                    if (currentLocationMarker) {
+                        locationMap.removeLayer(currentLocationMarker);
+                    }
+                    
+                    // Crear nuevo marcador y centrarlo en el mapa
+                    currentLocationMarker = L.marker([lat, lng]).addTo(locationMap);
+                    locationMap.setView([lat, lng], 15);
+                    
+                }, function(error) {
+                    alert('Error al obtener la ubicación: ' + error.message);
+                });
+            } else {
+                alert('Tu navegador no soporta geolocalización');
+            }
+        });
+
+        
+        // Funciones de navegación
+        function showHome() {
+            // Implementar lógica para mostrar inicio
+        }
+
+        function showMap() {
+            // Implementar lógica para mostrar mapa
+            mainMap.invalidateSize();
+        }
+
+        // Actualizar tamaño de los mapas cuando se abre el modal
+        document.getElementById('reportModal').addEventListener('shown.bs.modal', function () {
+            locationMap.invalidateSize();
+        });
+    </script>
+</body>
+</html>

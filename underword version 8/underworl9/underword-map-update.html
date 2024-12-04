@@ -1,0 +1,77 @@
+<!-- Reemplaza la sección de script del mapa en el archivo anterior con este código -->
+<script>
+    // Función para obtener ubicación con promesa
+    function getCurrentPosition() {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                reject('Geolocalización no soportada');
+            }
+            
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            };
+            
+            navigator.geolocation.getCurrentPosition(resolve, reject, options);
+        });
+    }
+
+    // Inicialización del mapa principal
+    let map = L.map('map');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    let mainMarker;
+
+    // Inicialización del mapa de ubicación para reportes
+    let locationMap = L.map('locationMap');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(locationMap);
+    let locationMarker;
+
+    // Función para inicializar ubicación
+    async function initializeLocation(targetMap, marker) {
+        try {
+            const position = await getCurrentPosition();
+            const { latitude, longitude } = position.coords;
+            
+            if (marker) {
+                targetMap.removeLayer(marker);
+            }
+            
+            marker = L.marker([latitude, longitude]).addTo(targetMap);
+            targetMap.setView([latitude, longitude], 15);
+            
+            return marker;
+        } catch (error) {
+            console.error('Error getting location:', error);
+            // Ubicación por defecto (puedes ajustarla)
+            targetMap.setView([19.4326, -99.1332], 13);
+        }
+    }
+
+    // Inicializar mapa principal al cargar
+    window.addEventListener('load', async () => {
+        mainMarker = await initializeLocation(map, mainMarker);
+    });
+
+    // Evento para el botón de ubicación en el reporte
+    document.getElementById('getLocation').addEventListener('click', async () => {
+        locationMarker = await initializeLocation(locationMap, locationMarker);
+    });
+
+    // Función modificada para mostrar/ocultar mapa
+    function showMap() {
+        const mapElement = document.querySelector('#map');
+        const mainContent = document.querySelector('.main-content');
+        
+        if (mapElement.style.display === 'none') {
+            mapElement.style.display = 'block';
+            mainContent.style.display = 'none';
+            map.invalidateSize();
+            // Actualizar ubicación al mostrar el mapa
+            initializeLocation(map, mainMarker);
+        } else {
+            mapElement.style.display = 'none';
+            mainContent.style.display = 'block';
+        }
+    }
+</script>
