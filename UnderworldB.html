@@ -360,14 +360,14 @@
 
   <!-- Bootstrap JS (Opcional, para funcionalidades avanzadas como modales o dropdowns) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  
+
   <div class="app-container">
-        <div class="text-center">
-            <img src="img/Logo.jpg" height="150px">
-            <h4 id="underword" class="mb-4">UNDERWORLD</h4>
-        </div>
+    <div class="text-center">
+        <img src="img/Logo.jpg" height="150px">
+        <h4 id="underword" class="mb-4">UNDERWORLD</h4>
     </div>
-        <!-- Sliding Menu -->
+</div>
+    <!-- Sliding Menu -->
     <div id="mySidebar" class="sidebar">
         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
         <a href="#" data-bs-toggle="modal" data-bs-target="#personalDataModal">Datos Personales</a>
@@ -500,13 +500,13 @@
         <div class="row g-3 mb-4">
             <div class="col-4">
                 <div class="stat-card text-center p-2">
-                    <h3>3</h3>
+                    <h3>5</h3>
                     <span class="small">Activos</span>
                 </div>
             </div>
             <div class="col-4">
                 <div class="stat-card text-center p-2">
-                    <h3>3</h3>
+                    <h3>5</h3>
                     <span class="small">Áreas</span>
                 </div>
             </div>
@@ -517,8 +517,22 @@
                 </div>
             </div>
         </div>
+        <div class="report-card severity-high p-3">
+            <h6>
+                Universidad Tecnólogica de Tecamác
+            </h6>
+            <p>Innundacion</p>
+            <span class="badge bg-danger">Severidad Alta</span>
+            <span class="small">Hace 2 seg</span>
+        </div>
 
         <h5 id="reportes-recientes" class="mb-3">Reportes Recientes</h5>
+        <div class="report-card severity-medium p-3">
+            <h6>Universidad Tecnólogica de Tecamác</h6>
+            <p>Bache</p>
+            <span class="badge bg-warning text-dark">Severidad Media</span>
+            <span class="small">Hace 1 min</span>
+        </div>
 
         <div class="report-card severity-high p-3">
             <h6>CARRETERA México-Pachuca KM37.1</h6>
@@ -540,7 +554,7 @@
             <span class="badge bg-success">Severidad Baja</span>
             <span class="small">Hace 3 horas</span>
         </div>
-
+        
 <div id="map" style="display: none;"></div>
     </div>
 
@@ -579,9 +593,7 @@
                 </div>
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary">Enviar
-                        <a href="UnderWorld.html">___</a>
-                    </button>
+                    <button type="button" class="btn btn-primary">Enviar</button>
                 </div>
             </div>
         </div>
